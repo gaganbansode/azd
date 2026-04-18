@@ -194,18 +194,10 @@ $(document).ready(function () {
                 btn.text("SHARE ON INSTAGRAM").prop("disabled", false);
               });
           } else {
-            // Desktop fallback: download 1080x1350 image, then open Instagram
-            var link = document.createElement("a");
-            link.download = "wardrobe-score.png";
-            link.href = URL.createObjectURL(blob);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            setTimeout(function () {
-              URL.revokeObjectURL(link.href);
-            }, 1000);
+            alert(
+              "To share on Instagram, please open this page on your mobile device.",
+            );
             btn.text("SHARE ON INSTAGRAM").prop("disabled", false);
-            window.open("https://www.instagram.com/", "_blank");
           }
         }, "image/png");
       })
