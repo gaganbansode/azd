@@ -132,11 +132,40 @@ $(document).ready(function () {
     html2canvas(document.querySelector(".card-div"), {
       useCORS: false,
       allowTaint: false,
-      scale: 2,
+      scale: 3,
       logging: false,
     })
-      .then(function (canvas) {
-        canvas.toBlob(function (blob) {
+      .then(function (capturedCanvas) {
+        // Build a 4:5 Instagram-ready canvas (1080x1350)
+        var igW = 1080;
+        var igH = 1350;
+        var igCanvas = document.createElement("canvas");
+        igCanvas.width = igW;
+        igCanvas.height = igH;
+        var ctx = igCanvas.getContext("2d");
+
+        // Fill background matching the score section gradient
+        var grad = ctx.createLinearGradient(0, 0, igW, igH);
+        grad.addColorStop(0, "#D8D1BF");
+        grad.addColorStop(1, "#D6CBB5");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, igW, igH);
+
+        // Scale captured card-div to fit centered with padding
+        var padding = 80;
+        var maxW = igW - padding * 2;
+        var maxH = igH - padding * 2;
+        var scale = Math.min(
+          maxW / capturedCanvas.width,
+          maxH / capturedCanvas.height,
+        );
+        var drawW = capturedCanvas.width * scale;
+        var drawH = capturedCanvas.height * scale;
+        var drawX = (igW - drawW) / 2;
+        var drawY = (igH - drawH) / 2;
+        ctx.drawImage(capturedCanvas, drawX, drawY, drawW, drawH);
+
+        igCanvas.toBlob(function (blob) {
           if (!blob) {
             alert("Could not generate image. Please try again.");
             btn.text("SHARE ON INSTAGRAM").prop("disabled", false);
@@ -148,7 +177,7 @@ $(document).ready(function () {
           });
 
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            // Mobile: use native share sheet (user can pick Instagram)
+            // Mobile: native share sheet — user can pick Instagram directly
             navigator
               .share({
                 files: [file],
@@ -165,7 +194,7 @@ $(document).ready(function () {
                 btn.text("SHARE ON INSTAGRAM").prop("disabled", false);
               });
           } else {
-            // Desktop fallback: download image, then open Instagram
+            // Desktop fallback: download 1080x1350 image, then open Instagram
             var link = document.createElement("a");
             link.download = "wardrobe-score.png";
             link.href = URL.createObjectURL(blob);
